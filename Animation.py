@@ -785,9 +785,47 @@ class _Mover(_Actor):
 
 class _ViewProviderMover(_ViewProviderActor):
 	"A View Provider for the Mover object"
+
+	def attach(self, vobj):
+		_ViewProviderActor.attach(self, vobj)
+		self.emenu.append( ("Update vector motion", self.update) )
  
 	def getIcon(self):
 		return __dir__ + '/icons/mover.png'
+
+	def start(self):
+		self.Object.initPlaceMotion.Base = self.Object.obj2.Placement.Base
+		self.Object.initPlaceMotion.Rotation.Angle = self.Object.obj2.Placement.Rotation.Angle
+		App.activeDocument().recompute(None,True,True)
+		
+
+	def close(self):
+		self.Object.obj2.Placement.Base = self.Object.initPlaceMotion.Base
+
+		self.Object.obj2.Placement.Rotation.Angle = self.Object.initPlaceMotion.Rotation.Angle
+		
+		App.activeDocument().recompute(None,True,True)
+
+	def update(self):
+
+		try:
+			start = FreeCADGui.Selection.getSelectionEx()[0].SubObjects[0].firstVertex().Point
+			end =  FreeCADGui.Selection.getSelectionEx()[0].SubObjects[0].lastVertex().Point
+			v =  end - start
+
+			self.Object.vectorMotion = v
+			
+		except Exception as a:
+			FreeCAD.Console.PrintMessage(f"_ViewProviderMover.update failed: {a}")
+			diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Updating", f"Please select exactly one edge first to use it as the new \"Motion Vector\" then click this button again")
+			diag.setWindowFlags(PySide.QtCore.Qt.WindowStaysOnTopHint)
+			diag.exec_()
+
+	def dialer(self, factor):
+		self.Object.obj2.Placement.Base.x = self.Object.initPlaceMotion.Base.x + (self.Object.vectorMotion.x * factor)
+		self.Object.obj2.Placement.Base.y = self.Object.initPlaceMotion.Base.y + (self.Object.vectorMotion.y * factor)
+		self.Object.obj2.Placement.Base.z = self.Object.initPlaceMotion.Base.z + (self.Object.vectorMotion.z * factor)
+
 
 #-------------------------------------
 

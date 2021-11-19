@@ -18,17 +18,21 @@ class _EditWidget(QtGui.QWidget):
 		self.vollabel =QtGui.QLabel( "<b>"+obj.Object.Label+"</b>")
 		self.obj=obj
 
+		self.obj.start()
+
 		if dialer:
 			dial = QtGui.QDial()
 			dial.setNotchesVisible(True)
 			self.dial=dial
+			dial.setMinimum(-100)
 			dial.setMaximum(100)
 
 			edi = QtGui.QLineEdit()
-			edi.setText("50")
-			dial.valueChanged.connect(lambda: edi.setText(str(dial.value())))
-			edi.textChanged.connect(lambda:dial.setValue(int(edi.text())))
-			dial.valueChanged.connect(obj.dialer)
+			edi.setText("0")
+			dial.setValue(0)
+			dial.valueChanged.connect(lambda: edi.setText(f"{dial.value()} %"))
+			edi.textChanged.connect(lambda:dial.setValue(int(edi.text().strip("%"))))
+			dial.valueChanged.connect(lambda: obj.dialer(dial.value() / 100))
 
 
 		layout = QtGui.QVBoxLayout()
@@ -53,12 +57,23 @@ class _EditWidget(QtGui.QWidget):
 			self.setWindowTitle(obj.Object.target.Label)
 		except:
 			pass
+	def keyPressEvent(self, e):
+		print(f"{e} / {QtCore.Qt.Key_Escape}")
+		if e.key() == QtCore.Qt.Key_Escape:
+			self.close2()
+		# Consume the event so that it is not repeated at EditableText level
+		e.accept()
+
+	def closeEvent(self, event):
+		self.close2()
+		event.accept()
 
 	def close2(self):
 		sayErr("close2")
 		self.hide()
 		say("2")
 		say(self.obj)
+		self.obj.close()
 		FreeCAD.tt=self.obj
 		self.obj.Object.ViewObject.Visibility=False
 		say("done")
