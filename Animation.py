@@ -27,7 +27,6 @@ __url__ = "http://www.freecadbuch.de"
 
 import matplotlib
 matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4']='PySide'
 
 import FreeCAD, Part, PartGui, Draft, Drawing , PySide
 from FreeCAD import Vector,Base
@@ -183,9 +182,10 @@ class _ViewProviderActor():
 	def __init__(self,vobj,icon='/icons/mover.png'):
 		self.iconpath = __dir__ + icon
 		self.Object = vobj.Object
+
+		self.vers = "Unknown"
 		vobj.Proxy = self
-		
- 
+
 	def getIcon(self):
 		return self.iconpath
 
@@ -257,7 +257,7 @@ class _ViewProviderActor():
 	def animforward(self):
 		FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
 		for i in range(101):
-			self.obj2.time=float(i)/100
+			self.Object.time=float(i)/100
 			FreeCAD.ActiveDocument.recompute()
 			FreeCADGui.updateGui() 
 			time.sleep(0.02)
@@ -265,7 +265,7 @@ class _ViewProviderActor():
 	def animbackward(self):
 		FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
 		for i in range(101):
-			self.obj2.time=float(100-i)/100
+			self.Object.time=float(100-i)/100
 			FreeCAD.ActiveDocument.recompute()
 			FreeCADGui.updateGui() 
 			time.sleep(0.02)
